@@ -1,5 +1,5 @@
 import { MigrationFn } from 'umzug';
-import {DataTypes, Sequelize} from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 
 export const up: MigrationFn<Sequelize> = async ({ context }) => {
   const q = context.getQueryInterface();

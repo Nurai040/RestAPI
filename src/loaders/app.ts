@@ -1,15 +1,15 @@
-import {loadMiddlewares} from './middlewares';
-import {loadRoutes} from './routes';
+import { loadMiddlewares } from './middlewares';
+import { loadRoutes } from './routes';
 import express from 'express';
-import {loadContext} from './context';
-import {loadModels} from './models';
-import {loadSequelize} from './sequelize';
-import {config} from '../config';
-import {loadPassport} from './passport';
+import { loadContext } from './context';
+import { loadModels } from './models';
+import { loadSequelize } from './sequelize';
+import { config } from '../config';
+import { loadPassport } from './passport';
 
 export const loadApp = async () => {
   const app = express();
-  const sequelize = loadSequelize(config)
+  const sequelize = loadSequelize(config);
 
   loadModels(sequelize);
 
@@ -20,4 +20,4 @@ export const loadApp = async () => {
   loadRoutes(app, context);
 
   return app;
-}
+};
