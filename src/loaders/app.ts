@@ -6,6 +6,7 @@ import { loadModels } from './models';
 import { loadSequelize } from './sequelize';
 import { config } from '../config';
 import { loadPassport } from './passport';
+import { cachService } from '../services/redis.service';
 
 export const loadApp = async () => {
   const app = express();
@@ -14,6 +15,8 @@ export const loadApp = async () => {
   loadModels(sequelize);
 
   const context = await loadContext();
+  
+  await cachService.connect();
 
   loadPassport(app, context);
   loadMiddlewares(app, context);

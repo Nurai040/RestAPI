@@ -33,6 +33,7 @@ export const makeAuthRouter: RouterFactory = (context: Context) => {
     ],
     upload.single('profileImage'),
     async (req: any, res: any) => {
+      const log = req.log;
       try {
         const error = validationResult(req);
 
@@ -63,13 +64,15 @@ export const makeAuthRouter: RouterFactory = (context: Context) => {
           image,
         );
 
+        log.info(`New user is registered with id ${user.id}`);
         res.status(201).json(user);
       } catch (error) {
         if (error.message === 'Email already exists') {
+          log.error(`User with existing email trying to register`);
           return res.status(400).json({ message: 'Email already exists' });
         }
 
-        console.error('Error creating user: ', error);
+        log.error('Error creating user: ',{ error});
 
         return res
           .status(505)

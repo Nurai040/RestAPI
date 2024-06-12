@@ -32,7 +32,7 @@ const makeUserRouter = (context) => {
             max: 10,
         }),
         (0, express_validator_1.check)('firstName', 'The field with firstName should not be empty').notEmpty(),
-        (0, express_validator_1.check)('lastName', 'The field with firstName should not be empty').notEmpty(),
+        (0, express_validator_1.check)('lastName', 'The field with lastName should not be empty').notEmpty(),
     ], passport_1.default.authenticate('jwt', { session: false }), (0, role_1.roles)([user_model_1.UserRole.Admin]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const errors = (0, express_validator_2.validationResult)(req);
@@ -52,8 +52,14 @@ const makeUserRouter = (context) => {
     router.get('/users', passport_1.default.authenticate('jwt', { session: false }), (0, role_1.roles)([user_model_1.UserRole.Admin]), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield userservice.getUsers(req, res);
     }));
-    router.get('/users/:id', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.get('/users/:id', [
+        (0, express_validator_1.param)('id').isInt().withMessage('ID must be an integer')
+    ], passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            const errors = (0, express_validator_2.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ message: 'Validation error', errors });
+            }
             const id = parseInt(req.params.id);
             const user = yield user_model_1.User.findByPk(id);
             if (!user) {
@@ -68,11 +74,23 @@ const makeUserRouter = (context) => {
                 .json({ message: 'Something went wrong on the server' });
         }
     }));
-    router.put('/users/:id', passport_1.default.authenticate('jwt', { session: false }), upload_1.default.single('profileImage'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.put('/users/:id', [
+        (0, express_validator_1.param)('id').isInt().withMessage('ID must be an integer')
+    ], passport_1.default.authenticate('jwt', { session: false }), upload_1.default.single('profileImage'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        const errors = (0, express_validator_2.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: 'Validation error', errors });
+        }
         yield userservice.putUser(req, res);
     }));
-    router.delete('/users/:id', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.delete('/users/:id', [
+        (0, express_validator_1.param)('id').isInt().withMessage('ID must be an integer')
+    ], passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            const errors = (0, express_validator_2.validationResult)(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ message: 'Validation error', errors });
+            }
             const userID = parseInt(req.params.id);
             const user = yield user_model_1.User.findByPk(userID);
             const currentUser = req.user;

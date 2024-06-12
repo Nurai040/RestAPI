@@ -98,9 +98,11 @@ export class User
       foreignKey: 'from_user',
       as: 'FromUser',
     });
+    
     User.hasMany(models.feedback, {
       foreignKey: 'to_user',
       as: 'ToUser',
     });
+   
   }
 }

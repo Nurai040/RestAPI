@@ -1,8 +1,10 @@
 import { Project } from '../models/project.model';
 import { UserRole } from '../models/user.model';
+import { cachService } from './redis.service';
 
 export class ProjectService {
   async createProject(req: any, res: any) {
+    const log = req.log;
     try {
       const { userId, description } = req.body;
       let image = null;
@@ -16,9 +18,13 @@ export class ProjectService {
         image,
         description,
       });
+      await cachService.delByPattern('project_*');
+      await cachService.delByPattern(`cv_${userId}`);
+      
+      log.info(`NEW Project is created`);
       return res.status(200).json(project);
     } catch (error) {
-      console.error('Error with creating project: ', error);
+      log.error('Error with creating project: ', {error});
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -26,9 +32,16 @@ export class ProjectService {
   }
 
   async getProject(req: any, res: any) {
+    const log = req.log;
     try {
       const pageSize = parseInt(req.query.pageSize as string) || 10;
       const page = parseInt(req.query.page as string) || 1;
+      const cacheKey = `project_${page}_${pageSize}`;
+      const cacheData = await cachService.get(cacheKey);
+      if(cacheData){
+        log.info('Returning cached data in get /project route');
+        return res.status(200).json(cacheData);
+      }
 
       const { count, rows } = await Project.findAndCountAll({
         limit: pageSize,
@@ -36,9 +49,12 @@ export class ProjectService {
       });
 
       res.setHeader('X-total-count', count);
+      await cachService.set(cacheKey, rows, 7200);
+
+      log.info('Fetching projects');
       return res.status(200).json(rows);
     } catch (error) {
-      console.error('Error with fetching projects: ', error);
+      log.error('Error with fetching projects: ', {error});
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -46,16 +62,24 @@ export class ProjectService {
   }
 
   async getProjectById(req: any, res: any) {
+    const log = req.log;
     try {
       const projectId = parseInt(req.params.id);
       const currentPrjct = await Project.findByPk(projectId);
-
+      const cacheKey = `project_${projectId}`;
+      const cacheData = await cachService.get(cacheKey);
+      if(cacheData){
+        log.info('Returning cached data on the route get /project/:id');
+        return res.status(200).json(cacheData);
+      }
       if (!currentPrjct) {
         return res.status(404).json({ messsage: 'Not found' });
       }
+      await cachService.set(cacheKey, currentPrjct, 7200);
+      log.info(`Fetching project with ${projectId}`);
       return res.statis(200).json(currentPrjct);
     } catch (error) {
-      console.error('Error with fetching project by ID: ', error);
+      log.error('Error with fetching project by ID: ', {error});
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -63,6 +87,7 @@ export class ProjectService {
   }
 
   async updateProjectById(req: any, res: any) {
+    const log = req.log;
     try {
       const projectId = parseInt(req.params.id);
       const currentPrjct = await Project.findByPk(projectId);
@@ -76,6 +101,7 @@ export class ProjectService {
       }
 
       if (!currentPrjct) {
+        log.warn(`The project with ${projectId} id is not found`);
         return res.status(404).json({ messsage: 'Not found' });
       }
 
@@ -83,6 +109,7 @@ export class ProjectService {
         currentPrjct.user_id !== req.user.id &&
         req.user.role !== UserRole.Admin
       ) {
+        log.warn(`Unauthorized to update project with ${projectId} id`);
         return res
           .status(403)
           .json({ message: 'Unauthorized to update this project' });
@@ -93,10 +120,13 @@ export class ProjectService {
       if (description) currentPrjct.description = description;
 
       await currentPrjct.save();
+      await cachService.delByPattern('project_*');
+      await cachService.delByPattern(`cv_${userId}`)
 
+      log.info(`Project with ${projectId} id is updated`);
       return res.status(200).json(currentPrjct);
     } catch (error) {
-      console.error('Error with updating project by ID: ', error);
+      log.error('Error with updating project by ID: ', {error});
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -104,11 +134,13 @@ export class ProjectService {
   }
 
   async deleteProjectById(req: any, res: any) {
+    const log = req.log;
     try {
       const projectId = parseInt(req.params.id);
       const currentPrjct = await Project.findByPk(projectId);
-
+      const userId = currentPrjct.user_id;
       if (!currentPrjct) {
+        log.warn(`The project with ${projectId} id is not found`); 
         return res.status(404).json({ messsage: 'Not found' });
       }
 
@@ -122,10 +154,14 @@ export class ProjectService {
       }
 
       await currentPrjct.destroy();
+      await cachService.delByPattern('project_*');
+      await cachService.delByPattern(`cv_${userId}`);
+
+      log.info(`Project with ${projectId} id is deleted`);
 
       return res.status(200).json({ message: 'Project is deleted!' });
     } catch (error) {
-      console.error('Error with deleting project by ID: ', error);
+      log.error('Error with deleting project by ID: ', {error});
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });

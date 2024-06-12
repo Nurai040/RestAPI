@@ -23,27 +23,11 @@ const makeCVRouter = (context) => {
     router.get('/user/:userId/cv', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const userId = parseInt(req.params.userId);
-            const user = yield user_model_1.User.findByPk(userId);
+            const user = yield user_model_1.User.findByPk(userId, { include: [project_model_1.Project, { model: feedback_model_1.Feedback, as: 'ToUser' }, experience_model_1.Experience] });
             if (!user) {
                 return res.status(404).json({ message: 'Not found' });
             }
-            const projects = yield project_model_1.Project.findAll({ where: { user_id: userId } });
-            const feedbacks = yield feedback_model_1.Feedback.findAll({ where: { to_user: userId } });
-            const experiences = yield experience_model_1.Experience.findAll({
-                where: { user_id: userId },
-            });
-            return res.status(200).json({
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                title: user.title,
-                image: user.image,
-                summary: user.summary,
-                email: user.email,
-                experiences,
-                projects,
-                feedbacks,
-            });
+            return res.status(200).json(user);
         }
         catch (error) {
             console.error('Error with fetching the CV: ', error);
