@@ -29,12 +29,12 @@ class Experience extends sequelize_1.Model {
             startDate: {
                 type: sequelize_1.DataTypes.DATE,
                 allowNull: true,
-                field: "startDate"
+                field: 'startDate',
             },
             endDate: {
                 type: sequelize_1.DataTypes.DATE,
                 allowNull: true,
-                field: "endDate"
+                field: 'endDate',
             },
             description: {
                 type: sequelize_1.DataTypes.TEXT,

@@ -4,19 +4,20 @@ import { loadSequelize } from '../loaders/sequelize';
 import { generateToken } from '../services/generatejwt';
 import { UserRole } from '../models/user.model';
 import { loadApp } from '../loaders/app';
+import { Feedback } from '../models/feedback.model';
 
-let sequelize:any;
-let server:any;
+let sequelize: any;
+let server: any;
 let adminToken: string;
 
 beforeAll(async () => {
   sequelize = loadSequelize(config);
   await sequelize.sync({ force: true });
-  
+
   const adminUser = {
     id: 1,
     email: 'admin@example.com',
-    role: UserRole.Admin
+    role: UserRole.Admin,
   };
 
   adminToken = generateToken(adminUser);
@@ -31,12 +32,24 @@ afterAll(async () => {
   await sequelize.close();
   await server.close();
 });
+beforeEach(async () => {
+  await Feedback.destroy({
+    where: {},
+  truncate: true
+  })
+});
 
-describe('FEEDBACK endpoint', ()=>{
-    it('should create a new feedback', async()=>{
-       
-    const fromUserId = 1; 
-    const toUserId = 2; 
+afterEach(async () => {
+  await Feedback.destroy({
+    where: {},
+  truncate: true
+  })
+});
+
+describe('FEEDBACK endpoint', () => {
+  it('should create a new feedback', async () => {
+    const fromUserId = 1;
+    const toUserId = 2;
 
     const response = await request(server)
       .post('/api/feedback')
@@ -53,89 +66,92 @@ describe('FEEDBACK endpoint', ()=>{
     expect(response.body.from_user).toBe(fromUserId);
     expect(response.body.company_name).toBe('Company ABC');
     expect(response.body.to_user).toBe(toUserId);
-    expect(response.body.content).toBe('This is the feedback content.'); 
-    });
+    expect(response.body.content).toBe('This is the feedback content.');
+  });
 
-    it('should fetch the list of feedbacks', async()=>{
-        const response = await request(server)
-        .get('/api/feedback')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
-        expect(response.body).toBeInstanceOf(Array);
-    });
+  it('should fetch the list of feedbacks', async () => {
+    const response = await request(server)
+      .get('/api/feedback')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+    expect(response.body).toBeInstanceOf(Array);
+  });
 
-    it('should fetch the feedback by id', async()=>{
-        const newFeedback = await request(server)
-        .post('/api/feedback')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-            fromUser: 5,
+  it('should fetch the feedback by id', async () => {
+    const newFeedback = await request(server)
+      .post('/api/feedback')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fromUser: 2,
         companyName: 'Company DFG',
-        toUser: 6,
-        context: 'This is the feedback content of 5.',
-        }).expect(201);
-
-        const feedbackId = parseInt(newFeedback.body.id);
-
-        const response = await request(server)
-        .get(`/api/feedback/${feedbackId}`)
-        .expect(200);
-
-        expect(response.body).toHaveProperty('id');
-        expect(response.body.id).toBe(feedbackId);
-        expect(response.body.company_name).toBe('Company DFG');
-    });
-
-    it('should update feedback by ID', async()=>{
-        const newFeedback = await request(server)
-        .post('/api/feedback')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-            fromUser: 2,
-        companyName: 'Company HIJ',
-        toUser: 9,
+        toUser: 1,
         context: 'This is the feedback content of 2.',
-        }).expect(201);
+      })
+      .expect(201);
 
-        const feedbackId = parseInt(newFeedback.body.id);
+    const feedbackId = parseInt(newFeedback.body.id);
 
-        const response = await request(server)
-        .put(`/api/feedback/${feedbackId}`)
-        .send({
-            fromUser: 2,
-            companyName: 'Company NEW HIJ',
-            toUser: 9,
-            context: 'This is the NEW feedback content of 2.', 
-        })
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+    const response = await request(server)
+      .get(`/api/feedback/${feedbackId}`)
+      .expect(200);
 
-        expect(response.body).toHaveProperty('id');
-        expect(response.body.id).toBe(feedbackId);
-        expect(response.body.company_name).toBe('Company NEW HIJ'); 
-    });
-    
-    it('should delete feedback by ID', async()=>{
-        const newFeedback = await request(server)
-        .post('/api/feedback')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-            fromUser: 3,
+    expect(response.body).toHaveProperty('id');
+    expect(response.body.id).toBe(feedbackId);
+    expect(response.body.company_name).toBe('Company DFG');
+  });
+
+  it('should update feedback by ID', async () => {
+    const newFeedback = await request(server)
+      .post('/api/feedback')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fromUser: 2,
+        companyName: 'Company HIJ',
+        toUser: 1,
+        context: 'This is the feedback content of 2.',
+      })
+      .expect(201);
+
+    const feedbackId = parseInt(newFeedback.body.id);
+
+    const response = await request(server)
+      .put(`/api/feedback/${feedbackId}`)
+      .send({
+        fromUser: 2,
+        companyName: 'Company NEW HIJ',
+        toUser: 1,
+        context: 'This is the NEW feedback content of 2.',
+      })
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('id');
+    expect(response.body.id).toBe(feedbackId);
+    expect(response.body.company_name).toBe('Company NEW HIJ');
+  });
+
+  it('should delete feedback by ID', async () => {
+    const newFeedback = await request(server)
+      .post('/api/feedback')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        fromUser: 2,
         companyName: 'Company KLM',
-        toUser: 4,
-        context: 'This is the feedback content of 3.',
-        }).expect(201);
+        toUser: 1,
+        context: 'This is the feedback content of 2.',
+      })
+      .expect(201);
 
-        const feedbackId = parseInt(newFeedback.body.id);
+    const feedbackId = parseInt(newFeedback.body.id);
 
-        await request(server)
-        .delete(`/api/feedback/${feedbackId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+    await request(server)
+      .delete(`/api/feedback/${feedbackId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
 
-        await request(server)
-        .get(`/api/feedback/${feedbackId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(404);
-    });
-})
+    await request(server)
+      .get(`/api/feedback/${feedbackId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(404);
+  });
+});

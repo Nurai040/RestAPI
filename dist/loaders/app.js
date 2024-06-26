@@ -21,14 +21,21 @@ const models_1 = require("./models");
 const sequelize_1 = require("./sequelize");
 const config_1 = require("../config");
 const passport_1 = require("./passport");
+const redis_service_1 = require("../services/redis.service");
 const loadApp = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = (0, express_1.default)();
     const sequelize = (0, sequelize_1.loadSequelize)(config_1.config);
     (0, models_1.loadModels)(sequelize);
     const context = yield (0, context_1.loadContext)();
+    yield redis_service_1.cachService.connect();
     (0, passport_1.loadPassport)(app, context);
     (0, middlewares_1.loadMiddlewares)(app, context);
     (0, routes_1.loadRoutes)(app, context);
+    app.use((err, req, res, next) => {
+        const log = req.log;
+        log.error(err);
+        res.status(505).json({ message: 'Something went wrong on the server' });
+    });
     return app;
 });
 exports.loadApp = loadApp;

@@ -16,23 +16,26 @@ export const makeUserRouter = (context: Context) => {
   router.post(
     '/users',
     [
-      check('email', "email shouldn't be empty").notEmpty().isString().isLength({max:255}),
+      check('email', "email shouldn't be empty")
+        .notEmpty()
+        .isString()
+        .isLength({ max: 255 }),
       check('email', 'not correct email').isEmail(),
       check('password', 'Password should be length of >4 and <255').isLength({
         min: 4,
         max: 255,
       }),
-      check(
-        'firstName',
-        'The field with firstName should not be empty',
-      ).notEmpty().isString().isLength({max:128}),
-      check(
-        'lastName',
-        'The field with lastName should not be empty',
-      ).notEmpty().isString().isLength({max:128}),
-      check('role').isString().isLength({max:50}),
-      check('title').isString().isLength({max:256}),
-      check('summary').isString().isLength({max:256})
+      check('firstName', 'The field with firstName should not be empty')
+        .notEmpty()
+        .isString()
+        .isLength({ max: 128 }),
+      check('lastName', 'The field with lastName should not be empty')
+        .notEmpty()
+        .isString()
+        .isLength({ max: 128 }),
+      check('role').isString().isLength({ max: 50 }),
+      check('title').isString().isLength({ max: 256 }),
+      check('summary').isString().isLength({ max: 256 }),
     ],
     passport.authenticate('jwt', { session: false }),
     roles([UserRole.Admin]),
@@ -47,41 +50,41 @@ export const makeUserRouter = (context: Context) => {
 
         return res.status(201).json(user);
       } catch (err) {
-        log.error('Error on the path POST /api/users: ', {err});
+        log.error('Error on the path POST /api/users: ', { err });
         return res
           .status(505)
-          .json({ message: 'Something went wrong on the server'});
+          .json({ message: 'Something went wrong on the server' });
       }
     },
   );
 
   router.get(
-    '/users',[
-      query('pageSize').optional().isInt({min: 1, max:100}).toInt(),
-      query('page').optional().isInt({min:1}).toInt(),
+    '/users',
+    [
+      query('pageSize').optional().isInt({ min: 1, max: 100 }).toInt(),
+      query('page').optional().isInt({ min: 1 }).toInt(),
     ],
     passport.authenticate('jwt', { session: false }),
     roles([UserRole.Admin]),
-    async (req:any, res:any) => {
+    async (req: any, res: any) => {
       const log = req.log;
-      try{
-      const errors = validationResult(req);
+      try {
+        const errors = validationResult(req);
         if (!errors.isEmpty()) {
           return res.status(400).json({ message: 'Validation error', errors });
         }
-      await userservice.getUsers(req, res);
-      } catch(err){
-        log.error("Error with get /users", {err});
+        await userservice.getUsers(req, res);
+      } catch (err) {
+        log.error('Error with get /users', { err });
       }
     },
   );
 
   router.get(
-    '/users/:id',[
-      param('id').isInt().withMessage('ID must be an integer')
-  ],
+    '/users/:id',
+    [param('id').isInt().withMessage('ID must be an integer')],
     passport.authenticate('jwt', { session: false }),
-    async (req:any, res:any) => {
+    async (req: any, res: any) => {
       const log = req.log;
       try {
         const errors = validationResult(req);
@@ -92,8 +95,8 @@ export const makeUserRouter = (context: Context) => {
         const cacheKey = `users_${id}`;
         const cacheData = await cachService.get(cacheKey);
 
-        if(cacheData){
-          log.info("User is fetched successfully");
+        if (cacheData) {
+          log.info('User is fetched successfully');
           return res.status(200).json(cacheData);
         }
 
@@ -105,10 +108,10 @@ export const makeUserRouter = (context: Context) => {
         }
 
         await cachService.set(cacheKey, user, 7200);
-        log.info("User is fetched successfully");
+        log.info('User is fetched successfully');
         return res.status(200).json(user);
       } catch (error) {
-        log.error('Error with fetching user with id: ', {error});
+        log.error('Error with fetching user with id: ', { error });
         return res
           .status(505)
           .json({ message: 'Something went wrong on the server' });
@@ -117,48 +120,51 @@ export const makeUserRouter = (context: Context) => {
   );
 
   router.put(
-    '/users/:id',[
+    '/users/:id',
+    [
       param('id').isInt().withMessage('ID must be an integer'),
-      check('email', "email shouldn't be empty").notEmpty().isString().isLength({max:255}),
+      check('email', "email shouldn't be empty")
+        .notEmpty()
+        .isString()
+        .isLength({ max: 255 }),
       check('email', 'not correct email').isEmail(),
       check('password', 'Password should be length of >4 and <255').isLength({
         min: 4,
         max: 255,
       }),
-      check(
-        'firstName',
-        'The field with firstName should not be empty',
-      ).notEmpty().isString().isLength({max:128}),
-      check(
-        'lastName',
-        'The field with lastName should not be empty',
-      ).notEmpty().isString().isLength({max:128}),
-      check('role').isString().isLength({max:50}),
-      check('title').isString().isLength({max:256}),
-      check('summary').isString().isLength({max:256}) 
-  ],
+      check('firstName', 'The field with firstName should not be empty')
+        .notEmpty()
+        .isString()
+        .isLength({ max: 128 }),
+      check('lastName', 'The field with lastName should not be empty')
+        .notEmpty()
+        .isString()
+        .isLength({ max: 128 }),
+      check('role').isString().isLength({ max: 50 }),
+      check('title').isString().isLength({ max: 256 }),
+      check('summary').isString().isLength({ max: 256 }),
+    ],
     passport.authenticate('jwt', { session: false }),
     upload.single('profileImage'),
-    async (req:any, res:any) => {
-      const log = req.log
-      try{
-      const errors = validationResult(req);
+    async (req: any, res: any) => {
+      const log = req.log;
+      try {
+        const errors = validationResult(req);
         if (!errors.isEmpty()) {
           return res.status(400).json({ message: 'Validation error', errors });
         }
-      await userservice.putUser(req, res);
-      } catch(err){
+        await userservice.putUser(req, res);
+      } catch (err) {
         log.error(`Error with put /users/${req.params.id}`);
       }
     },
   );
 
   router.delete(
-    '/users/:id',[
-      param('id').isInt().withMessage('ID must be an integer')
-  ],
+    '/users/:id',
+    [param('id').isInt().withMessage('ID must be an integer')],
     passport.authenticate('jwt', { session: false }),
-    async (req:any, res:any) => {
+    async (req: any, res: any) => {
       const log = req.log;
       try {
         const errors = validationResult(req);
@@ -179,7 +185,7 @@ export const makeUserRouter = (context: Context) => {
         }
 
         if (currentUser.id !== user.id && currentUser.role !== UserRole.Admin) {
-          log.warn(`Unauthorized to delete user with ${userID}`); 
+          log.warn(`Unauthorized to delete user with ${userID}`);
           return res
             .status(403)
             .json({ message: 'Unauthorized to delete this user' });
@@ -188,10 +194,10 @@ export const makeUserRouter = (context: Context) => {
         await user.destroy();
         await cachService.delByPattern('users_*');
         await cachService.delByPattern(`cv_${userID}`);
-        log.info("User is deleted");
+        log.info('User is deleted');
         return res.status(204).json({ message: 'User is deleted!' });
       } catch (err) {
-        log.error('Error with deleting user: ', {err});
+        log.error('Error with deleting user: ', { err });
         return res
           .status(505)
           .json({ message: 'Something went wrong on the server' });

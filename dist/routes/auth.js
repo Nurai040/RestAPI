@@ -34,6 +34,7 @@ const makeAuthRouter = (context) => {
         (0, express_validator_1.check)('firstName', 'The field with firstName should not be empty').notEmpty(),
         (0, express_validator_1.check)('lastName', 'The field with firstName should not be empty').notEmpty(),
     ], upload_1.default.single('profileImage'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        const log = req.log;
         try {
             const error = (0, express_validator_2.validationResult)(req);
             if (!error.isEmpty()) {
@@ -43,13 +44,15 @@ const makeAuthRouter = (context) => {
             }
             const { firstName, lastName, image, title, summary, role, email, password, } = req.body;
             const user = yield authService.registration(firstName, lastName, title, summary, email, password, image);
+            log.info(`New user is registered with id ${user.id}`);
             res.status(201).json(user);
         }
         catch (error) {
             if (error.message === 'Email already exists') {
+                log.error(`User with existing email trying to register`);
                 return res.status(400).json({ message: 'Email already exists' });
             }
-            console.error('Error creating user: ', error);
+            log.error('Error creating user: ', { error });
             return res
                 .status(505)
                 .json({ message: 'Something went wrong on the servers' });
@@ -63,9 +66,7 @@ const makeAuthRouter = (context) => {
             }
             if (!user) {
                 next(err);
-                return res
-                    .status(400)
-                    .json({ message: 'Incorrect email or password' });
+                return res.status(400).json({ message: 'Incorrect email or password' });
             }
             const token = (0, generatejwt_1.generateToken)(user);
             const filteredUserInfo = {

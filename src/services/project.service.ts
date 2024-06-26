@@ -20,11 +20,11 @@ export class ProjectService {
       });
       await cachService.delByPattern('project_*');
       await cachService.delByPattern(`cv_${userId}`);
-      
+
       log.info(`NEW Project is created`);
       return res.status(200).json(project);
     } catch (error) {
-      log.error('Error with creating project: ', {error});
+      log.error({error}, 'Error with creating project: ');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -38,7 +38,7 @@ export class ProjectService {
       const page = parseInt(req.query.page as string) || 1;
       const cacheKey = `project_${page}_${pageSize}`;
       const cacheData = await cachService.get(cacheKey);
-      if(cacheData){
+      if (cacheData) {
         log.info('Returning cached data in get /project route');
         return res.status(200).json(cacheData);
       }
@@ -54,7 +54,7 @@ export class ProjectService {
       log.info('Fetching projects');
       return res.status(200).json(rows);
     } catch (error) {
-      log.error('Error with fetching projects: ', {error});
+      log.error({ error }, 'Error with fetching projects: ');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -68,7 +68,7 @@ export class ProjectService {
       const currentPrjct = await Project.findByPk(projectId);
       const cacheKey = `project_${projectId}`;
       const cacheData = await cachService.get(cacheKey);
-      if(cacheData){
+      if (cacheData) {
         log.info('Returning cached data on the route get /project/:id');
         return res.status(200).json(cacheData);
       }
@@ -79,7 +79,7 @@ export class ProjectService {
       log.info(`Fetching project with ${projectId}`);
       return res.statis(200).json(currentPrjct);
     } catch (error) {
-      log.error('Error with fetching project by ID: ', {error});
+      log.error({ error }, 'Error with fetching project by ID: ');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -121,12 +121,12 @@ export class ProjectService {
 
       await currentPrjct.save();
       await cachService.delByPattern('project_*');
-      await cachService.delByPattern(`cv_${userId}`)
+      await cachService.delByPattern(`cv_${userId}`);
 
       log.info(`Project with ${projectId} id is updated`);
       return res.status(200).json(currentPrjct);
     } catch (error) {
-      log.error('Error with updating project by ID: ', {error});
+      log.error({ error }, 'Error with updating project by ID: ');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -140,7 +140,7 @@ export class ProjectService {
       const currentPrjct = await Project.findByPk(projectId);
       const userId = currentPrjct.user_id;
       if (!currentPrjct) {
-        log.warn(`The project with ${projectId} id is not found`); 
+        log.warn(`The project with ${projectId} id is not found`);
         return res.status(404).json({ messsage: 'Not found' });
       }
 
@@ -161,7 +161,7 @@ export class ProjectService {
 
       return res.status(200).json({ message: 'Project is deleted!' });
     } catch (error) {
-      log.error('Error with deleting project by ID: ', {error});
+      log.error({ error }, 'Error with deleting project by ID: ');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });

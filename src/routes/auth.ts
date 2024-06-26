@@ -72,7 +72,7 @@ export const makeAuthRouter: RouterFactory = (context: Context) => {
           return res.status(400).json({ message: 'Email already exists' });
         }
 
-        log.error('Error creating user: ',{ error});
+        log.error('Error creating user: ', { error });
 
         return res
           .status(505)
@@ -81,24 +81,20 @@ export const makeAuthRouter: RouterFactory = (context: Context) => {
     },
   );
 
-  router.post(
-    '/login',
-    (req, res, next) => {
-      passport.authenticate('local', (err, user, info) => {
-        if (err) {
-          next(err);
-          return res.status(505).json({ message: 'Internal server error' });
-        }
-        if (!user) {
-          next(err);
-          return res
-            .status(400)
-            .json({ message: 'Incorrect email or password' });
-        }
+  router.post('/login', (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        next(err);
+        return res.status(505).json({ message: 'Internal server error' });
+      }
+      if (!user) {
+        next(err);
+        return res.status(400).json({ message: 'Incorrect email or password' });
+      }
 
-        const token = generateToken(user);
-        const filteredUserInfo = {
-          user: {
+      const token = generateToken(user);
+      const filteredUserInfo = {
+        user: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -106,13 +102,13 @@ export const makeAuthRouter: RouterFactory = (context: Context) => {
           summary: user.summary,
           email: user.email,
           image: user.image,
-          },
-          token: token,
-        }
+        },
+        token: token,
+      };
 
-        return res.status(200).json(filteredUserInfo);
-      })(req,res,next)
-    });
+      return res.status(200).json(filteredUserInfo);
+    })(req, res, next);
+  });
 
   return router;
 };

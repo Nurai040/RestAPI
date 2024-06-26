@@ -53,12 +53,12 @@ export class Experience
         startDate: {
           type: DataTypes.DATE,
           allowNull: true,
-          field: "startDate"
+          field: 'startDate',
         },
         endDate: {
           type: DataTypes.DATE,
           allowNull: true,
-          field: "endDate"
+          field: 'endDate',
         },
         description: {
           type: DataTypes.TEXT,

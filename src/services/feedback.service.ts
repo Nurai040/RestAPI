@@ -19,7 +19,7 @@ export class FeedbackService {
       log.info(`New Feedback with ${feedback.id} id is created`);
       return res.status(201).json(feedback);
     } catch (error) {
-      log.error('Error with creating feedback: ', {error});
+      log.error({ error }, 'Error creating feedback');
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -34,7 +34,7 @@ export class FeedbackService {
 
       const cacheKey = `feedback_${page}_${pageSize}`;
       const cacheData = await cachService.get(cacheKey);
-      if(cacheData){
+      if (cacheData) {
         log.info(`Cached data is returned in fetching feedbacks`);
         return res.status(200).json(cacheData);
       }
@@ -50,7 +50,7 @@ export class FeedbackService {
       log.info(`Fetching feedbacks`);
       return res.status(200).json(rows);
     } catch (error) {
-      log.error('Error with fetching feedback: ', {error});
+      log.error('Error with fetching feedback: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -64,7 +64,7 @@ export class FeedbackService {
       const cacheKey = `feedback_${feedbackId}`;
       const cacheData = await cachService.get(cacheKey);
 
-      if(cacheData){
+      if (cacheData) {
         log.info(`Returning cached data of feedback with ${feedbackId} id`);
         return res.status(200).json(cacheData);
       }
@@ -74,13 +74,13 @@ export class FeedbackService {
       if (!currentFdbck) {
         return res.status(404).json({ message: 'Not found' });
       }
-      
+
       await cachService.set(cacheKey, currentFdbck, 7200);
 
       log.info(`Fetching the feedback with ${feedbackId} id`);
       return res.status(200).json(currentFdbck);
     } catch (error) {
-      log.error('Error with fetching feedback by ID: ', {error});
+      log.error('Error with fetching feedback by ID: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -120,7 +120,7 @@ export class FeedbackService {
       log.info(`Feedback with ${fdbckId} id is updated`);
       return res.status(200).json(currentFdbck);
     } catch (error) {
-      log.error('Error with updating feedback: ', {error});
+      log.error('Error with updating feedback: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -155,7 +155,7 @@ export class FeedbackService {
       log.info(`Feedback with ${fdbckId} id is deleted`);
       return res.status(200).json({ message: 'Deleted the feedback' });
     } catch (error) {
-      log.error('Error with deleting feedback: ', {error});
+      log.error('Error with deleting feedback: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });

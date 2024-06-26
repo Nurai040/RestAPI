@@ -15,12 +15,18 @@ export const loadApp = async () => {
   loadModels(sequelize);
 
   const context = await loadContext();
-  
+
   await cachService.connect();
 
   loadPassport(app, context);
   loadMiddlewares(app, context);
   loadRoutes(app, context);
+
+  app.use((err: any, req: any, res: any, next: any) => {
+    const log = req.log;
+    log.error(err);
+    res.status(505).json({ message: 'Something went wrong on the server' });
+  });
 
   return app;
 };

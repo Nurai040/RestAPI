@@ -24,19 +24,19 @@ export class UserService {
     await cachService.delByPattern('users_*');
     await cachService.delByPattern(`cv_${user.id}`);
 
-    log.info("User is added");
+    log.info('User is added');
     return user;
   }
 
   async getUsers(req: any, res: any) {
-      const pageSize = parseInt(req.query.pageSize as string) || 10;
-      const page = parseInt(req.query.page as string) || 1;
-      const cacheKey = `users_${page}_${pageSize}`;
-      const log = req.log;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const page = parseInt(req.query.page as string) || 1;
+    const cacheKey = `users_${page}_${pageSize}`;
+    const log = req.log;
     try {
       const cachedData = await cachService.get(cacheKey);
-      if(cachedData){
-        log.info("Cached data is fetched");
+      if (cachedData) {
+        log.info('Cached data is fetched');
         return res.status(200).json(cachedData);
       }
 
@@ -57,7 +57,7 @@ export class UserService {
       }));
 
       await cachService.set(cacheKey, responseData, 7200);
-      log.info("Users are fetched");
+      log.info('Users are fetched');
       return res.status(200).json(responseData);
     } catch (error) {
       log.error('Error with fetching users:  ', error);
@@ -108,7 +108,7 @@ export class UserService {
       await cachService.delByPattern(`cv_${userID}`);
 
       log.info(`User with ${userID} is updated`);
-      
+
       return res.status(200).json({
         id: user.id,
         firstName: user.firstName,

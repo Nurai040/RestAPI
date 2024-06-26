@@ -22,7 +22,7 @@ export class ExperienceService {
       log.info(`New experience with ${experience.id} id is created`);
       return res.status(201).json(experience);
     } catch (error) {
-      log.error('Error with post /api/experience: ', {error});
+      log.error('Error with post /api/experience: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -37,7 +37,7 @@ export class ExperienceService {
       const cacheKey = `experience_${page}_${pageSize}`;
       const cacheData = await cachService.get(cacheKey);
 
-      if(cacheData){
+      if (cacheData) {
         log.info(`Returning cached data for fetching the experiences`);
         return res.status(200).json(cacheData);
       }
@@ -45,10 +45,10 @@ export class ExperienceService {
         limit: pageSize,
         offset: (page - 1) * pageSize,
       });
-      
+
       res.setHeader('X-total-count', count);
 
-      const responseData =rows.map((user) => ({
+      const responseData = rows.map((user) => ({
         id: user.id,
         userId: user.user_id,
         companyName: user.company_name,
@@ -63,14 +63,14 @@ export class ExperienceService {
       log.info('Fetching experiences');
       return res.status(200).json(responseData);
     } catch (error) {
-      log.error('Error with get /api/experience: ', {error});
+      log.error('Error with get /api/experience: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
     }
   }
 
-  async getExperienceById(req: any, res: any) {
+  async getExperienceById(req: any, res: any, next: any) {
     const log = req.log;
     try {
       const expId = parseInt(req.params.id);
@@ -78,8 +78,10 @@ export class ExperienceService {
       const cacheKey = `experience_${expId}`;
       const cacheData = await cachService.get(cacheKey);
 
-      if(cacheData){
-        log.info(`Returning cached data for fetching the experience with ${expId} id`); 
+      if (cacheData) {
+        log.info(
+          `Returning cached data for fetching the experience with ${expId} id`,
+        );
         return res.status(200).json(cacheData);
       }
 
@@ -92,10 +94,7 @@ export class ExperienceService {
       log.info(`Fetching experience with ${expId} id`);
       return res.status(200).json(currentExp);
     } catch (error) {
-      log.error('Error with get /api/experience/:id: ', {error});
-      return res
-        .status(505)
-        .json({ message: 'Something went wrong on the server' });
+      next(error);
     }
   }
 
@@ -136,7 +135,7 @@ export class ExperienceService {
       log.info(`The experience with ${expId} id is updated`);
       return res.status(200).json(currentExp);
     } catch (error) {
-      log.error('Error with put /api/experience/:id: ', {error});
+      log.error('Error with put /api/experience/:id: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
@@ -169,10 +168,10 @@ export class ExperienceService {
       await cachService.delByPattern('experience_*');
       await cachService.delByPattern(`cv_${user_id}`);
 
-      log.info(`The experience with ${expId} id is deleted`); 
+      log.info(`The experience with ${expId} id is deleted`);
       return res.status(200).json({ message: 'The experience is deleted' });
     } catch (error) {
-      log.error('Error with delete /api/experience/:id: ', {error});
+      log.error('Error with delete /api/experience/:id: ', { error });
       return res
         .status(505)
         .json({ message: 'Something went wrong on the server' });
